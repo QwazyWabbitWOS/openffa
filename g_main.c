@@ -94,6 +94,10 @@ cvar_t  *flood_infos;
 cvar_t  *flood_perinfo;
 cvar_t  *flood_infodelay;
 
+#ifdef XATRIX
+cvar_t	*xatrix;			//set when xatrix mission pack 1 is enabled
+#endif //XATRIX
+
 LIST_DECL(g_map_list);
 LIST_DECL(g_map_queue);
 
@@ -967,6 +971,10 @@ static void G_Init(void)
     sv_rollangle = gi.cvar("sv_rollangle", "2", 0);
     sv_maxvelocity = gi.cvar("sv_maxvelocity", "2000", 0);
     sv_gravity = gi.cvar("sv_gravity", "800", 0);
+
+#ifdef XATRIX
+    xatrix = gi.cvar ("xatrix", "0", CVAR_SERVERINFO|CVAR_LATCH);
+#endif //XATRIX
 
     // noset vars
     dedicated = gi.cvar("dedicated", "0", CVAR_NOSET);

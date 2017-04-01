@@ -314,6 +314,15 @@ void MoveClientToIntermission(edict_t *ent)
     ent->client->grenade_state = GRENADE_NONE;
     ent->client->grenade_framenum = 0;
 
+#ifdef XATRIX
+    // RAFAEL
+    ent->client->quadfire_framenum = 0;
+
+    // RAFAEL
+    ent->client->trap_state = TRAP_NONE;
+    ent->client->trap_framenum = 0;
+#endif //XATRIX
+
     ent->watertype = 0;
     ent->waterlevel = 0;
     ent->viewheight = 0;
@@ -440,7 +449,7 @@ visible
 returns 1 if the entity is visible to self, even if not infront ()
 =============
 */
-static qboolean visible(edict_t *self, edict_t *other, int mask)
+/*static */qboolean visible(edict_t *self, edict_t *other, int mask)
 {
     vec3_t  spot1;
     vec3_t  spot2;
@@ -687,7 +696,18 @@ void G_SetStats(edict_t *ent)
     if (ent->client->quad_framenum > level.framenum) {
         ent->client->ps.stats[STAT_TIMER_ICON] = level.images.quad;
         ent->client->ps.stats[STAT_TIMER] = (ent->client->quad_framenum - level.framenum) / HZ;
-    } else if (ent->client->enviro_framenum > level.framenum) {
+    }
+#ifdef XATRIX
+    // RAFAEL
+    else if (ent->client->quadfire_framenum > level.framenum)
+    {
+        // note to self
+        // need to change imageindex
+        ent->client->ps.stats[STAT_TIMER_ICON] = level.images.quadfire;
+        ent->client->ps.stats[STAT_TIMER] = (ent->client->quadfire_framenum - level.framenum) / HZ;
+    }
+#endif //XATRIX
+    else if (ent->client->enviro_framenum > level.framenum) {
         ent->client->ps.stats[STAT_TIMER_ICON] = level.images.envirosuit;
         ent->client->ps.stats[STAT_TIMER] = (ent->client->enviro_framenum - level.framenum) / HZ;
     } else if (ent->client->breather_framenum > level.framenum) {

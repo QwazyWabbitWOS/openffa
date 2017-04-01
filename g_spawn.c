@@ -124,6 +124,20 @@ void SP_misc_easterchick2(edict_t *self);
 
 void SP_monster_commander_body(edict_t *self);
 
+#ifdef XATRIX
+// RAFAEL 14-APR-98
+void SP_rotating_light (edict_t *self);
+void SP_object_repair (edict_t *self);
+void SP_misc_crashviper (edict_t *ent);
+void SP_misc_viper_missile (edict_t *self);
+void SP_misc_amb4 (edict_t *ent);
+void SP_target_mal_laser (edict_t *ent);
+void SP_misc_transport (edict_t *ent);
+// END 14-APR-98
+
+void SP_misc_nuke (edict_t *ent);
+#endif //XATRIX
+
 static const spawn_t    g_spawns[] = {
     {"item_health", SP_item_health},
     {"item_health_small", SP_item_health_small},
@@ -151,6 +165,12 @@ static const spawn_t    g_spawns[] = {
     {"func_timer", SP_func_timer},
     {"func_killbox", SP_func_killbox},
 
+#ifdef XATRIX
+    // RAFAEL
+    {"func_object_repair", SP_object_repair},
+    {"rotating_light", SP_rotating_light},
+#endif //XATRIX
+
     {"trigger_always", SP_trigger_always},
     {"trigger_once", SP_trigger_once},
     {"trigger_multiple", SP_trigger_multiple},
@@ -175,7 +195,10 @@ static const spawn_t    g_spawns[] = {
     {"target_earthquake", SP_target_earthquake},
     {"target_character", SP_target_character},
     {"target_string", SP_target_string},
-
+#ifdef XATRIX
+    // RAFAEL 15-APR-98
+    {"target_mal_laser", SP_target_mal_laser},
+#endif //XATRIX
     {"worldspawn", SP_worldspawn},
     {"viewthing", SP_viewthing},
 
@@ -201,6 +224,17 @@ static const spawn_t    g_spawns[] = {
     {"misc_eastertank", SP_misc_eastertank},
     {"misc_easterchick", SP_misc_easterchick},
     {"misc_easterchick2", SP_misc_easterchick2},
+#ifdef XATRIX
+    // RAFAEL
+    {"misc_crashviper", SP_misc_crashviper},
+    {"misc_viper_missile", SP_misc_viper_missile},
+    {"misc_amb4", SP_misc_amb4},
+    // RAFAEL 17-APR-98
+    {"misc_transport", SP_misc_transport},
+    // END 17-APR-98
+    // RAFAEL 12-MAY-98
+    {"misc_nuke", SP_misc_nuke},
+#endif //XATRIX
 
     {"monster_commander_body", SP_monster_commander_body},
 
@@ -901,6 +935,9 @@ void SP_worldspawn(edict_t *ent)
     level.images.invulnerability = gi.imageindex("p_invulnerability");
     level.images.envirosuit = gi.imageindex("p_envirosuit");
     level.images.rebreather = gi.imageindex("p_rebreather");
+#ifdef XATRIX
+    level.images.quadfire = gi.imageindex("p_quadfire");
+#endif //XATRIX
 
     if (!st.gravity)
         gi.cvar_set("sv_gravity", "800");

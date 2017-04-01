@@ -347,9 +347,47 @@ static void Cmd_Use_f(edict_t *ent)
         return;
     }
     index = ITEM_INDEX(it);
-    if (!ent->client->inventory[index]) {
-        gi.cprintf(ent, PRINT_HIGH, "Out of item: %s\n", s);
-        return;
+    if (!ent->client->inventory[index])
+    {
+#ifdef XATRIX
+        // RAFAEL
+		if (strcmp (it->pickup_name, "HyperBlaster") == 0)
+		{
+			it = FindItem ("Ionripper");
+			if (!it)
+			{
+				gi.cprintf (ent, PRINT_HIGH, "unknown item: Ionripper\n");
+				return;
+			}
+			index = ITEM_INDEX (it);
+			if (!ent->client->inventory[index])
+			{
+				gi.cprintf (ent, PRINT_HIGH, "Out of item: %s\n", s);
+				return;
+			}
+		}
+		// RAFAEL
+		else if (strcmp (it->pickup_name, "Railgun") == 0)
+		{
+			it = FindItem ("Phalanx");
+			if (!it)
+			{
+				gi.cprintf (ent, PRINT_HIGH, "unknown item: Phalanx");
+				return;
+			}
+			index = ITEM_INDEX (it);
+			if (!ent->client->inventory[index])
+			{
+				gi.cprintf (ent, PRINT_HIGH, "Out of item: %s\n", s);
+				return;
+			}
+		}
+		else
+#endif //XATRIX
+        {
+            gi.cprintf (ent, PRINT_HIGH, "Out of item: %s\n", s);
+            return;
+        }
     }
 
     it->use(ent, it);
@@ -380,9 +418,37 @@ static void Cmd_Drop_f(edict_t *ent)
         return;
     }
     index = ITEM_INDEX(it);
-    if (!ent->client->inventory[index]) {
-        gi.cprintf(ent, PRINT_HIGH, "Out of item: %s\n", s);
-        return;
+    if (!ent->client->inventory[index])
+    {
+#ifdef XATRIX
+        // RAFAEL
+		if (strcmp (it->pickup_name, "HyperBlaster") == 0)
+		{
+			it = FindItem ("Ionripper");
+			index = ITEM_INDEX (it);
+			if (!ent->client->inventory[index])
+			{
+				gi.cprintf (ent, PRINT_HIGH, "Out of item: %s\n", s);
+				return;
+			}
+		}
+		// RAFAEL
+		else if (strcmp (it->pickup_name, "Railgun") == 0)
+		{
+			it = FindItem ("Phalanx");
+			index = ITEM_INDEX (it);
+			if (!ent->client->inventory[index])
+			{
+				gi.cprintf (ent, PRINT_HIGH, "Out of item: %s\n", s);
+				return;
+			}
+		}
+		else
+#endif //XATRIX
+        {
+            gi.cprintf (ent, PRINT_HIGH, "Out of item: %s\n", s);
+            return;
+        }
     }
 
     it->drop(ent, it);
@@ -967,7 +1033,11 @@ static void Cmd_Chase_f(edict_t *ent)
 
         if (!Q_stricmp(who, "quad")) {
             mode = CHASE_QUAD;
-        } else if (!Q_stricmp(who, "inv") ||
+        }
+        else if (!Q_stricmp(who, "quadfire")) {
+            mode = CHASE_QUADFIRE;
+        }
+        else if (!Q_stricmp(who, "inv") ||
                    !Q_stricmp(who, "pent")) {
             mode = CHASE_INVU;
         } else if (!Q_stricmp(who, "top") ||

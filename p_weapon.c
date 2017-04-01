@@ -26,9 +26,15 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static qboolean is_quad;
 static byte     is_silenced;
 
+#ifdef XATRIX
+static qboolean is_quadfire;
+#endif //XATRIX
 
 static void weapon_grenade_fire(edict_t *ent, qboolean held);
 
+#ifdef XATRIX
+void weapon_trap_fire (edict_t *ent, qboolean held);
+#endif //XATRIX
 
 static void P_ProjectSource(gclient_t *client, vec3_t point, vec3_t distance, vec3_t forward, vec3_t right, vec3_t result)
 {
@@ -170,6 +176,20 @@ static void NoAmmoWeaponChange(edict_t *ent)
         ent->client->newweapon = INDEX_ITEM(ITEM_RAILGUN);
         return;
     }
+#ifdef XATRIX
+    // RAFAEL
+    if ( ent->client->inventory[ITEM_MAGSLUG] &&
+         ent->client->inventory[ITEM_PHALANX])
+    {
+        ent->client->newweapon = INDEX_ITEM(ITEM_PHALANX);
+    }
+    // RAFAEL
+    if ( ent->client->inventory[ITEM_CELLS] &&
+         ent->client->inventory[ITEM_IONRIPPER])
+    {
+        ent->client->newweapon = INDEX_ITEM(ITEM_IONRIPPER);
+    }
+#endif //XATRIX
     if (ent->client->inventory[ITEM_CELLS]
         &&  ent->client->inventory[ITEM_HYPERBLASTER]) {
         ent->client->newweapon = INDEX_ITEM(ITEM_HYPERBLASTER);
@@ -216,6 +236,10 @@ void Think_Weapon(edict_t *ent)
     // call active weapon think routine
     if (ent->client->weapon && ent->client->weapon->weaponthink) {
         is_quad = (ent->client->quad_framenum > level.framenum);
+#ifdef XATRIX
+        // RAFAEL
+        is_quadfire = (ent->client->quadfire_framenum > level.framenum);
+#endif //XATRIX
         if (ent->client->silencer_shots)
             is_silenced = MZ_SILENCED;
         else
@@ -260,7 +284,81 @@ void Use_Weapon(edict_t *ent, gitem_t *item)
     ent->client->newweapon = item;
 }
 
+#ifdef XATRIX
+// RAFAEL 14-APR-98
+void Use_Weapon2 (edict_t *ent, gitem_t *item)
+{
+    int			ammo_index;
+    gitem_t		*ammo_item;
+    gitem_t		*nextitem;
+    int			index;
 
+    if (strcmp (item->pickup_name, "HyperBlaster") == 0)
+    {
+        if (item == ent->client->weapon)
+        {
+            item = INDEX_ITEM(ITEM_IONRIPPER);
+            index = ITEM_INDEX (item);
+            if (!ent->client->inventory[index])
+            {
+                item = INDEX_ITEM(ITEM_HYPERBLASTER);
+            }
+        }
+    }
+
+    else if (strcmp (item->pickup_name, "Railgun") == 0)
+    {
+        ammo_item = FindItem(item->ammo);
+        ammo_index = ITEM_INDEX(ammo_item);
+        if (!ent->client->inventory[ammo_index])
+        {
+            nextitem = INDEX_ITEM(ITEM_PHALANX);
+            ammo_item = FindItem(nextitem->ammo);
+            ammo_index = ITEM_INDEX(ammo_item);
+            if (ent->client->inventory[ammo_index])
+            {
+                item = INDEX_ITEM(ITEM_PHALANX);
+                index = ITEM_INDEX (item);
+                if (!ent->client->inventory[index])
+                {
+                    item = INDEX_ITEM(ITEM_RAILGUN);
+                }
+            }
+        }
+        else if (item == ent->client->weapon)
+        {
+            item = INDEX_ITEM(ITEM_PHALANX);
+            index = ITEM_INDEX (item);
+            if (!ent->client->inventory[index])
+            {
+                item = INDEX_ITEM(ITEM_RAILGUN);
+            }
+        }
+
+    }
+
+
+    // see if we're already using it
+    if (item == ent->client->weapon)
+        return;
+
+    if (item->ammo)
+    {
+        ammo_item = FindItem(item->ammo);
+        ammo_index = ITEM_INDEX(ammo_item);
+        if (!ent->client->inventory[ammo_index] && !g_select_empty->value)
+        {
+            gi.cprintf (ent, PRINT_HIGH, "No %s for %s.\n", ammo_item->pickup_name, item->pickup_name);
+            return;
+        }
+    }
+
+    // change to this weapon when down
+    ent->client->newweapon = item;
+
+}
+// END 14-APR-98
+#endif //XATRIX
 
 /*
 ================
@@ -611,6 +709,12 @@ void Weapon_GrenadeLauncher(edict_t *ent)
     static const int    fire_frames[]   = {6, 0};
 
     Weapon_Generic(ent, 5, 16, 59, 64, pause_frames, fire_frames, weapon_grenadelauncher_fire);
+
+#ifdef XATRIX
+    // RAFAEL
+    if (is_quadfire)
+        Weapon_Generic (ent, 5, 16, 59, 64, pause_frames, fire_frames, weapon_grenadelauncher_fire);
+#endif //XATRIX
 }
 
 /*
@@ -670,6 +774,13 @@ void Weapon_RocketLauncher(edict_t *ent)
     static const int    fire_frames[]   = {5, 0};
 
     Weapon_Generic(ent, 4, 12, 50, 54, pause_frames, fire_frames, weapon_rocketlauncher_fire);
+
+#ifdef XATRIX
+    // RAFAEL
+    if (is_quadfire)
+        Weapon_Generic (ent, 4, 12, 50, 54, pause_frames, fire_frames, weapon_rocketlauncher_fire);
+
+#endif //XATRIX
 }
 
 
@@ -726,6 +837,12 @@ void Weapon_Blaster(edict_t *ent)
     static const int    fire_frames[]   = {5, 0};
 
     Weapon_Generic(ent, 4, 8, 52, 55, pause_frames, fire_frames, weapon_blaster_fire);
+
+#ifdef XATRIX
+    // RAFAEL
+    if (is_quadfire)
+        Weapon_Generic (ent, 4, 8, 52, 55, pause_frames, fire_frames, weapon_blaster_fire);
+#endif //XATRIX
 }
 
 
@@ -786,6 +903,11 @@ void Weapon_HyperBlaster(edict_t *ent)
     static const int    fire_frames[]   = {6, 7, 8, 9, 10, 11, 0};
 
     Weapon_Generic(ent, 5, 20, 49, 53, pause_frames, fire_frames, weapon_hyperblaster_fire);
+#ifdef XATRIX
+    // RAFAEL
+    if (is_quadfire)
+        Weapon_Generic (ent, 5, 20, 49, 53, pause_frames, fire_frames, weapon_hyperblaster_fire);
+#endif //XATRIX
 }
 
 /*
@@ -874,6 +996,11 @@ void Weapon_Machinegun(edict_t *ent)
     static const int    fire_frames[]   = {4, 5, 0};
 
     Weapon_Generic(ent, 3, 5, 45, 49, pause_frames, fire_frames, weapon_machinegun_fire);
+#ifdef XATRIX
+    // RAFAEL
+    if (is_quadfire)
+        Weapon_Generic (ent, 3, 5, 45, 49, pause_frames, fire_frames, weapon_machinegun_fire);
+#endif //XATRIX
 }
 
 static void weapon_chaingun_fire(edict_t *ent)
@@ -981,6 +1108,12 @@ void Weapon_Chaingun(edict_t *ent)
     static const int    fire_frames[]   = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 0};
 
     Weapon_Generic(ent, 4, 31, 61, 64, pause_frames, fire_frames, weapon_chaingun_fire);
+
+#ifdef XATRIX
+    // RAFAEL
+    if (is_quadfire)
+        Weapon_Generic (ent, 4, 31, 61, 64, pause_frames, fire_frames, weapon_chaingun_fire);
+#endif //XATRIX
 }
 
 
@@ -1046,6 +1179,11 @@ void Weapon_Shotgun(edict_t *ent)
     static const int    fire_frames[]   = {8, 9, 0};
 
     Weapon_Generic(ent, 7, 18, 36, 39, pause_frames, fire_frames, weapon_shotgun_fire);
+#ifdef XATRIX
+    // RAFAEL
+    if (is_quadfire)
+        Weapon_Generic (ent, 7, 18, 36, 39, pause_frames, fire_frames, weapon_shotgun_fire);
+#endif //XATRIX
 }
 
 
@@ -1106,6 +1244,11 @@ void Weapon_SuperShotgun(edict_t *ent)
     static const int    fire_frames[]   = {7, 0};
 
     Weapon_Generic(ent, 6, 17, 57, 61, pause_frames, fire_frames, weapon_supershotgun_fire);
+#ifdef XATRIX
+    // RAFAEL
+    if (is_quadfire)
+        Weapon_Generic (ent, 6, 17, 57, 61, pause_frames, fire_frames, weapon_supershotgun_fire);
+#endif //XATRIX
 }
 
 
@@ -1165,6 +1308,11 @@ void Weapon_Railgun(edict_t *ent)
     static const int    fire_frames[]   = {4, 0};
 
     Weapon_Generic(ent, 3, 18, 56, 61, pause_frames, fire_frames, weapon_railgun_fire);
+#ifdef XATRIX
+    // RAFAEL
+    if (is_quadfire)
+        Weapon_Generic (ent, 3, 18, 56, 61, pause_frames, fire_frames, weapon_railgun_fire);
+#endif //XATRIX
 }
 
 
@@ -1237,7 +1385,324 @@ void Weapon_BFG(edict_t *ent)
     static const int    fire_frames[]   = {9, 17, 0};
 
     Weapon_Generic(ent, 8, 32, 55, 58, pause_frames, fire_frames, weapon_bfg_fire);
+#ifdef XATRIX
+    // RAFAEL
+    if (is_quadfire)
+        Weapon_Generic (ent, 8, 32, 55, 58, pause_frames, fire_frames, weapon_bfg_fire);
+#endif //XATRIX
 }
 
 
 //======================================================================
+
+#ifdef XATRIX
+
+// RAFAEL
+/*
+	RipperGun
+*/
+
+void weapon_ionripper_fire (edict_t *ent)
+{
+    vec3_t	start;
+    vec3_t	forward, right;
+    vec3_t	offset;
+    vec3_t	tempang;
+    int		damage;
+    int		kick;
+
+    //if (deathmatch->value)
+    //{
+        // tone down for deathmatch
+        damage = 30;
+        kick = 40;
+    //}
+    //else
+    //{
+    //    damage = 50;
+    //    kick = 60;
+    //}
+
+    if (is_quad)
+    {
+        damage *= 4;
+        kick *= 4;
+    }
+
+    VectorCopy (ent->client->v_angle, tempang);
+    tempang[YAW] += crandom();
+
+    AngleVectors (tempang, forward, right, NULL);
+
+    VectorScale (forward, -3, ent->client->kick_origin);
+    ent->client->kick_angles[0] = -3;
+
+    // VectorSet (offset, 0, 7, ent->viewheight - 8);
+    VectorSet (offset, 16, 7, ent->viewheight - 8);
+
+    P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+
+    fire_ionripper (ent, start, forward, damage, 500, EF_IONRIPPER);
+
+    // send muzzle flash
+    gi.WriteByte (svc_muzzleflash);
+    gi.WriteShort (ent - g_edicts);
+    gi.WriteByte (MZ_IONRIPPER | is_silenced);
+    gi.multicast (ent->s.origin, MULTICAST_PVS);
+
+    ent->client->ps.gunframe++;
+    //PlayerNoise (ent, start, PNOISE_WEAPON);
+
+    if (!DF(INFINITE_AMMO))
+        ent->client->inventory[ent->client->ammo_index] -= ent->client->weapon->quantity;
+
+    if (ent->client->inventory[ent->client->ammo_index] < 0)
+        ent->client->inventory[ent->client->ammo_index] = 0;
+}
+
+
+void Weapon_Ionripper (edict_t *ent)
+{
+    static int pause_frames[] = {36, 0};
+    static int fire_frames[] = {5, 0};
+
+    Weapon_Generic (ent, 4, 6, 36, 39, pause_frames, fire_frames, weapon_ionripper_fire);
+
+    if (is_quadfire)
+        Weapon_Generic (ent, 4, 6, 36, 39, pause_frames, fire_frames, weapon_ionripper_fire);
+}
+
+
+//
+//	Phalanx
+//
+
+void weapon_phalanx_fire (edict_t *ent)
+{
+    vec3_t		start;
+    vec3_t		forward, right, up;
+    vec3_t		offset;
+    vec3_t		v;
+    //int			kick = 12;
+    int			damage;
+    float		damage_radius;
+    int			radius_damage;
+
+    damage = 70 + (int)(random() * 10.0);
+    radius_damage = 120;
+    damage_radius = 120;
+
+    if (is_quad)
+    {
+        damage *= 4;
+        radius_damage *= 4;
+    }
+
+    AngleVectors (ent->client->v_angle, forward, right, NULL);
+
+    VectorScale (forward, -2, ent->client->kick_origin);
+    ent->client->kick_angles[0] = -2;
+
+    VectorSet(offset, 0, 8,  ent->viewheight-8);
+    P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+
+    if (ent->client->ps.gunframe == 8)
+    {
+        v[PITCH] = ent->client->v_angle[PITCH];
+        v[YAW]   = ent->client->v_angle[YAW] - 1.5;
+        v[ROLL]  = ent->client->v_angle[ROLL];
+        AngleVectors (v, forward, right, up);
+
+        radius_damage = 30;
+        damage_radius = 120;
+
+        fire_plasma (ent, start, forward, damage, 725, damage_radius, radius_damage);
+
+        if (!DF(INFINITE_AMMO))
+            ent->client->inventory[ent->client->ammo_index]--;
+    }
+    else
+    {
+        v[PITCH] = ent->client->v_angle[PITCH];
+        v[YAW]   = ent->client->v_angle[YAW] + 1.5;
+        v[ROLL]  = ent->client->v_angle[ROLL];
+        AngleVectors (v, forward, right, up);
+        fire_plasma (ent, start, forward, damage, 725, damage_radius, radius_damage);
+
+        // send muzzle flash
+        gi.WriteByte (svc_muzzleflash);
+        gi.WriteShort (ent-g_edicts);
+        gi.WriteByte (MZ_PHALANX | is_silenced);
+        gi.multicast (ent->s.origin, MULTICAST_PVS);
+
+        //PlayerNoise(ent, start, PNOISE_WEAPON);
+    }
+
+    ent->client->ps.gunframe++;
+
+}
+
+void Weapon_Phalanx (edict_t *ent)
+{
+    static int	pause_frames[]	= {29, 42, 55, 0};
+    static int	fire_frames[]	= {7, 8, 0};
+
+    Weapon_Generic (ent, 5, 20, 58, 63, pause_frames, fire_frames, weapon_phalanx_fire);
+
+    if (is_quadfire)
+        Weapon_Generic (ent, 5, 20, 58, 63, pause_frames, fire_frames, weapon_phalanx_fire);
+
+}
+
+/*
+======================================================================
+
+TRAP
+
+======================================================================
+*/
+
+#define TRAP_TIMER			5.0
+#define TRAP_MINSPEED		300
+#define TRAP_MAXSPEED		700
+
+void weapon_trap_fire (edict_t *ent, qboolean held)
+{
+    vec3_t	offset;
+    vec3_t	forward, right;
+    vec3_t	start;
+    int		damage = 125;
+    float	timer;
+    int		speed;
+    float	radius;
+
+    radius = damage+40;
+    if (is_quad)
+        damage *= 4;
+
+    VectorSet(offset, 8, 8, ent->viewheight-8);
+    AngleVectors (ent->client->v_angle, forward, right, NULL);
+    P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
+
+    timer = ent->client->trap_framenum - level.framenum;
+    speed = TRAP_MINSPEED + (TRAP_TIMER - timer) * ((TRAP_MAXSPEED - TRAP_MINSPEED) / TRAP_TIMER);
+    // fire_grenade2 (ent, start, forward, damage, speed, timer, radius, held);
+    fire_trap (ent, start, forward, damage, speed, timer, radius, held);
+
+// you don't get infinite traps!  ZOID
+//	if (! ( (int)dmflags->value & DF_INFINITE_AMMO ) )
+
+    ent->client->inventory[ent->client->ammo_index]--;
+
+    ent->client->trap_framenum = level.framenum + 1 * HZ;
+}
+
+void Weapon_Trap (edict_t *ent)
+{
+    if ((ent->client->newweapon) && (ent->client->weaponstate == WEAPON_READY))
+    {
+        ChangeWeapon (ent);
+        return;
+    }
+
+    if (ent->client->weaponstate == WEAPON_ACTIVATING)
+    {
+        ent->client->weaponstate = WEAPON_READY;
+        ent->client->weaponframe = 16;
+        return;
+    }
+
+    if (ent->client->weaponstate == WEAPON_READY)
+    {
+        if ( ((ent->client->latched_buttons|ent->client->buttons) & BUTTON_ATTACK) )
+        {
+            ent->client->latched_buttons &= ~BUTTON_ATTACK;
+            if (ent->client->inventory[ent->client->ammo_index])
+            {
+                ent->client->weaponframe = 1;
+                ent->client->weaponstate = WEAPON_FIRING;
+                ent->client->trap_framenum = 0;
+                ent->client->trap_state = TRAP_NONE;
+            }
+            else
+            {
+                NoAmmoWeaponChange (ent);
+            }
+            return;
+        }
+
+        if ((ent->client->weaponframe == 29) || (ent->client->weaponframe == 34) || (ent->client->weaponframe == 39) || (ent->client->weaponframe == 48))
+        {
+            if (rand_byte() & 15)
+                return;
+        }
+
+        if (++ent->client->weaponframe > 48)
+            ent->client->weaponframe = 16;
+        return;
+    }
+
+    if (ent->client->weaponstate == WEAPON_FIRING)
+    {
+        if (ent->client->weaponframe == 5)
+            // RAFAEL 16-APR-98
+            // gi.sound(ent, CHAN_WEAPON, gi.soundindex("weapons/hgrena1b.wav"), 1, ATTN_NORM, 0);
+            gi.sound(ent, CHAN_WEAPON, gi.soundindex("weapons/trapcock.wav"), 1, ATTN_NORM, 0);
+        // END 16-APR-98
+
+        if (ent->client->weaponframe == 11)
+        {
+            if (!ent->client->trap_framenum)
+            {
+                ent->client->trap_framenum = level.time + TRAP_TIMER + 2;
+                // RAFAEL 16-APR-98
+                ent->client->weapon_sound = gi.soundindex("weapons/traploop.wav");
+                // END 16-APR-98
+            }
+
+            // they waited too long, detonate it in their hand
+            if (ent->client->trap_state != TRAP_BLEW_UP && level.framenum >= ent->client->trap_framenum)
+            {
+                ent->client->weapon_sound = 0;
+                weapon_trap_fire (ent, qtrue);
+                ent->client->trap_state = TRAP_BLEW_UP;
+            }
+
+            if (ent->client->buttons & BUTTON_ATTACK)
+                return;
+
+            if (ent->client->trap_state == TRAP_BLEW_UP)
+            {
+                if (level.framenum >= ent->client->trap_framenum)
+                {
+                    ent->client->weaponframe = 15;
+                    ent->client->trap_state = TRAP_NONE;
+                }
+                else
+                {
+                    return;
+                }
+            }
+        }
+
+        if (ent->client->weaponframe == 12)
+        {
+            ent->client->weapon_sound = 0;
+            weapon_trap_fire (ent, qfalse);
+            ent->client->trap_state = TRAP_THROWN;
+        }
+
+        if ((ent->client->weaponframe == 15) && (level.framenum < ent->client->trap_framenum))
+            return;
+
+        ent->client->weaponframe++;
+
+        if (ent->client->weaponframe == 16)
+        {
+            ent->client->trap_framenum = 0;
+            ent->client->trap_state = TRAP_NONE;
+            ent->client->weaponstate = WEAPON_READY;
+        }
+    }
+}
+#endif //XATRIX

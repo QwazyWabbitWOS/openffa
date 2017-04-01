@@ -173,6 +173,12 @@ static void AccountItemKills(edict_t *ent)
         // FIXME: should account based on inflictor?
         ent->client->resp.items[ITEM_QUAD].kills++;
     }
+#ifdef XATRIX
+    if (ent->client->quadfire_framenum > level.framenum) {
+        // FIXME: should account based on inflictor?
+        ent->client->resp.items[ITEM_QUADFIRE].kills++;
+    }
+#endif //XATRIX
     if (ent->client->invincible_framenum > level.framenum) {
         ent->client->resp.items[ITEM_INVULNERABILITY].kills++;
     }
@@ -242,6 +248,13 @@ static void ClientObituary(edict_t *self, edict_t *inflictor, edict_t *attacker)
     case MOD_TRIGGER_HURT:
         message = "was in the wrong place";
         break;
+#ifdef XATRIX
+    // RAFAEL
+    case MOD_GEKK:
+    case MOD_BRAINTENTACLE:
+        message = "that's gotta hurt";
+        break;
+#endif //XATRIX
     }
     if (attacker == self) {
         switch (mod) {
@@ -278,6 +291,22 @@ static void ClientObituary(edict_t *self, edict_t *inflictor, edict_t *attacker)
         case MOD_BFG_BLAST:
             message = "should have used a smaller gun";
             break;
+#ifdef XATRIX
+        // RAFAEL 03-MAY-98
+        case MOD_TRAP:
+            switch (self->client->pers.gender) {
+                case GENDER_FEMALE:
+                    message = "sucked into her own trap";
+                    break;
+                case GENDER_MALE:
+                    message = "sucked into his own trap";
+                    break;
+                default:
+                    message = "sucked into it's own trap";
+                    break;
+            }
+            break;
+#endif //XATRIX
         default:
             switch (self->client->pers.gender) {
             case GENDER_FEMALE:
@@ -393,6 +422,20 @@ static void ClientObituary(edict_t *self, edict_t *inflictor, edict_t *attacker)
             message = "tried to invade";
             message2 = "'s personal space";
             break;
+#ifdef XATRIX
+        // RAFAEL 14-APR-98
+        case MOD_RIPPER:
+            message = "ripped to shreds by";
+            message2 = "'s ripper gun";
+            break;
+        case MOD_PHALANX:
+            message = "was evaporated by";
+            break;
+        case MOD_TRAP:
+            message = "caught in trap by";
+            break;
+        // END 14-APR-98
+#endif //XATRIX
         }
         if (message) {
             for (i = 0, ent = &g_edicts[1]; i < game.maxclients; i++, ent++) {
@@ -497,6 +540,10 @@ static void TossClientWeapon(edict_t *self)
     gitem_t     *item;
     edict_t     *drop;
     qboolean    quad;
+#ifdef XATRIX
+    // RAFAEL
+    qboolean	quadfire;
+#endif //XATRIX
     float       spread;
 
     item = self->client->weapon;
@@ -509,6 +556,14 @@ static void TossClientWeapon(edict_t *self)
         quad = qfalse;
     else
         quad = (self->client->quad_framenum > (level.framenum + 1 * HZ));
+
+#ifdef XATRIX
+    // RAFAEL
+    if (!DF(QUADFIRE_DROP))
+        quadfire = qfalse;
+    else
+        quadfire = (self->client->quadfire_framenum > (level.framenum + 1 * HZ));
+#endif //XATRIX
 
     if (item && quad)
         spread = 22.5;
@@ -532,6 +587,20 @@ static void TossClientWeapon(edict_t *self)
         drop->nextthink = self->client->quad_framenum;
         drop->think = G_FreeEdict;
     }
+#ifdef XATRIX
+    // RAFAEL
+    if (quadfire)
+    {
+        self->client->v_angle[YAW] += spread;
+        drop = Drop_Item (self, INDEX_ITEM(ITEM_QUADFIRE));
+        self->client->v_angle[YAW] -= spread;
+        drop->spawnflags |= DROPPED_PLAYER_ITEM;
+
+        drop->touch = Touch_Item;
+        drop->nextthink = self->client->quadfire_framenum;
+        drop->think = G_FreeEdict;
+    }
+#endif //XATRIX
 }
 
 
@@ -621,6 +690,11 @@ void player_die(edict_t *self, edict_t *inflictor, edict_t *attacker, int damage
     self->client->breather_framenum = 0;
     self->client->enviro_framenum = 0;
     self->flags &= ~FL_POWER_ARMOR;
+
+#ifdef XATRIX
+    // RAFAEL
+    self->client->quadfire_framenum = 0;
+#endif //XATRIX
 
     if (self->health < -40) {
         // gib
@@ -1169,6 +1243,12 @@ void PutClientInServer(edict_t *ent)
     client->max_grenades    = 50;
     client->max_cells       = 200;
     client->max_slugs       = 50;
+
+#ifdef XATRIX
+    // RAFAEL
+    client->max_magslug     = 50;
+    client->max_trap		= 5;
+#endif //XATRIX
 
     ent->health             = 100;
     ent->max_health         = 100;

@@ -549,7 +549,13 @@ static void SV_Physics_Toss(edict_t *ent)
 
 // add gravity
     if (ent->movetype != MOVETYPE_FLY
-        && ent->movetype != MOVETYPE_FLYMISSILE)
+        && ent->movetype != MOVETYPE_FLYMISSILE
+#ifdef XATRIX
+       // RAFAEL
+       // move type for rippergun projectile
+       && ent->movetype != MOVETYPE_WALLBOUNCE
+#endif //XATRIX
+        )
         SV_AddGravity(ent);
 
 // move angles
@@ -562,6 +568,12 @@ static void SV_Physics_Toss(edict_t *ent)
         return;
 
     if (trace.fraction < 1) {
+#ifdef XATRIX
+        // RAFAEL
+        if (ent->movetype == MOVETYPE_WALLBOUNCE)
+            backoff = 2.0;
+        else
+#endif //XATRIX
         if (ent->movetype == MOVETYPE_BOUNCE)
             backoff = 1.5;
         else
@@ -569,8 +581,19 @@ static void SV_Physics_Toss(edict_t *ent)
 
         ClipVelocity(ent->velocity, trace.plane.normal, ent->velocity, backoff);
 
+#ifdef XATRIX
+        // RAFAEL
+        if (ent->movetype == MOVETYPE_WALLBOUNCE)
+            vectoangles (ent->velocity, ent->s.angles);
+#endif //XATRIX
+
         // stop if on ground
-        if (trace.plane.normal[2] > 0.7) {
+        if (trace.plane.normal[2] > 0.7
+#ifdef XATRIX
+            && ent->movetype != MOVETYPE_WALLBOUNCE
+#endif //XATRIX
+                )
+        {
             if (ent->velocity[2] < 60 || ent->movetype != MOVETYPE_BOUNCE) {
                 ent->groundentity = trace.ent;
                 ent->groundentity_linkcount = trace.ent->linkcount;
@@ -634,6 +657,12 @@ void G_RunEntity(edict_t *ent)
     case MOVETYPE_FLYMISSILE:
         SV_Physics_Toss(ent);
         break;
+#ifdef XATRIX
+    // RAFAEL
+    case MOVETYPE_WALLBOUNCE:
+        SV_Physics_Toss (ent);
+        break;
+#endif //XATRIX
     default:
         gi.error("%s: bad movetype %i", __func__, ent->movetype);
     }

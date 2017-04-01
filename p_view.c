@@ -437,7 +437,19 @@ static void P_CalcBlend(edict_t *ent)
             gi.sound(ent, CHAN_ITEM, gi.soundindex("items/damage2.wav"), 1, ATTN_NORM, 0);
         if (remaining > 3 * HZ || ((remaining / FRAMEDIV) & 4))
             P_AddBlend(0, 0, 1, 0.08, ent->client->ps.blend);
-    } else if (ent->client->invincible_framenum > level.framenum) {
+    }
+#ifdef XATRIX
+    // RAFAEL
+    else if (ent->client->quadfire_framenum > level.framenum)
+    {
+        remaining = ent->client->quadfire_framenum - level.framenum;
+        if (remaining == 3 * HZ)	// beginning to fade
+            gi.sound(ent, CHAN_ITEM, gi.soundindex("items/quadfire2.wav"), 1, ATTN_NORM, 0);
+        if (remaining > 3 * HZ || ((remaining / FRAMEDIV) & 4) )
+            P_AddBlend (1, 0.2, 0.5, 0.08, ent->client->ps.blend);
+    }
+#endif //XATRIX
+    else if (ent->client->invincible_framenum > level.framenum) {
         remaining = ent->client->invincible_framenum - level.framenum;
         if (remaining == 3 * HZ)  // beginning to fade
             gi.sound(ent, CHAN_ITEM, gi.soundindex("items/protect2.wav"), 1, ATTN_NORM, 0);
@@ -725,6 +737,16 @@ static void P_SetEffects(edict_t *ent)
         if (remaining > 3 * HZ || ((remaining / FRAMEDIV) & 4))
             ent->s.effects |= EF_QUAD;
     }
+
+#ifdef XATRIX
+    // RAFAEL
+    if (ent->client->quadfire_framenum > level.framenum)
+    {
+        remaining = ent->client->quadfire_framenum - level.framenum;
+        if (remaining > 3 * HZ || ((remaining / FRAMEDIV) & 4) )
+            ent->s.effects |= EF_QUAD;
+    }
+#endif //XATRIX
 
     if (ent->client->invincible_framenum > level.framenum) {
         remaining = ent->client->invincible_framenum - level.framenum;

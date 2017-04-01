@@ -249,6 +249,8 @@ static inline float Q_fabs(float f)
 #define Vector4Negate(a,b)      ((b)[0]=-(a)[0],(b)[1]=-(a)[1],(b)[2]=-(a)[2],(b)[3]=-(a)[3])
 #define Vector4Set(v, a, b, c, d)   ((v)[0]=(a),(v)[1]=(b),(v)[2]=(c),(v)[3]=(d))
 
+void R_ConcatRotations (float in1[3][3], float in2[3][3], float out[3][3]);
+
 void AngleVectors(vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
 vec_t VectorNormalize(vec3_t v);        // returns vector length
 vec_t VectorNormalize2(vec3_t v, vec3_t out);
@@ -472,6 +474,10 @@ char *Q_strcasestr(const char *s1, const char *s2);
 char *Q_strchrnul(const char *s, int c);
 void *Q_memccpy(void *dst, const void *src, int c, size_t size);
 void Q_setenv(const char *name, const char *value);
+
+void ProjectPointOnPlane( vec3_t dst, const vec3_t p, const vec3_t normal );
+void PerpendicularVector( vec3_t dst, const vec3_t src );
+void RotatePointAroundVector( vec3_t dst, const vec3_t dir, const vec3_t point, float degrees );
 
 char *COM_SkipPath(const char *pathname);
 void COM_StripExtension(const char *in, char *out, size_t size);

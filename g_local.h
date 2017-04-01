@@ -19,6 +19,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // g_local.h -- local definitions for game module
 
+//-------------------------------------------------------------
+#define XATRIX							//Xatrix mission pack 1
+//-------------------------------------------------------------
+
 #include "q_shared.h"
 #include "q_list.h"
 
@@ -154,6 +158,11 @@ typedef enum {
     AMMO_GRENADES,
     AMMO_CELLS,
     AMMO_SLUGS
+#ifdef XATRIX
+    // RAFAEL
+    ,AMMO_MAGSLUG,
+    AMMO_TRAP
+#endif //XATRIX
 } ammo_t;
 
 typedef enum {
@@ -181,6 +190,13 @@ typedef enum {
     ITEM_CELLS,
     ITEM_ROCKETS,
     ITEM_SLUGS,
+#ifdef XATRIX
+    ITEM_MAGSLUG,
+    ITEM_QUADFIRE,
+    ITEM_PHALANX,
+    ITEM_IONRIPPER,
+    ITEM_TRAP,
+#endif //XATRIX
     ITEM_QUAD,
     ITEM_INVULNERABILITY,
     ITEM_SILENCER,
@@ -275,6 +291,10 @@ typedef enum {
     MOVETYPE_TOSS,          // gravity
     MOVETYPE_FLYMISSILE,    // extra size to monsters
     MOVETYPE_BOUNCE
+#ifdef XATRIX
+    // RAFAEL
+    ,MOVETYPE_WALLBOUNCE
+#endif //XATRIX
 } movetype_t;
 
 
@@ -310,7 +330,13 @@ typedef struct {
 #define WEAP_RAILGUN            10
 #define WEAP_BFG                11
 
-#define WEAP_TOTAL              12
+#ifdef XATRIX
+#define WEAP_PHALANX			12
+#define WEAP_BOOMER				13
+#define WEAP_TRAP	            14
+#endif //XATRIX
+
+#define WEAP_TOTAL              15
 
 typedef struct gitem_s {
     char        *classname; // spawning name
@@ -456,6 +482,9 @@ typedef struct {
         int     health;
         int     powershield;
         int     quad;
+#ifdef XATRIX
+        int     quadfire;
+#endif //XATRIX
         int     invulnerability;
         int     envirosuit;
         int     rebreather;
@@ -630,6 +659,16 @@ extern  spawn_temp_t    st;
 #define MOD_HIT             32
 #define MOD_TARGET_BLASTER  33
 #define MOD_TOTAL           34
+
+#ifdef XATRIX
+#define MOD_RIPPER				35
+#define MOD_PHALANX				36
+#define MOD_BRAINTENTACLE		37
+#define MOD_BLASTOFF			38
+#define MOD_GEKK				39
+#define MOD_TRAP				40
+#endif //XATRIX
+
 #define MOD_FRIENDLY_FIRE   0x8000000
 
 extern  int         meansOfDeath;
@@ -707,6 +746,10 @@ extern  cvar_t  *flood_infodelay;
 
 extern  list_t  g_map_list;
 extern  list_t  g_map_queue;
+
+#ifdef XATRIX
+extern	cvar_t	*xatrix;			//set when xatrix mission pack 1 is enables
+#endif //XATRIX
 
 //extern  cvar_t  *sv_features;
 
@@ -820,6 +863,13 @@ void ThrowClientHead(edict_t *self, int damage);
 void ThrowGib(edict_t *self, int modelindex, int damage, int type);
 void BecomeExplosion1(edict_t *self);
 
+#ifdef XATRIX
+// RAFAEL
+void ThrowHeadACID (edict_t *self, char *gibname, int damage, int type);
+void ThrowGibACID (edict_t *self, char *gibname, int damage, int type);
+/*static */qboolean visible(edict_t *self, edict_t *other, int mask);
+#endif //XATRIX
+
 //
 // g_weapon.c
 //
@@ -832,6 +882,14 @@ void fire_grenade2(edict_t *self, vec3_t start, vec3_t aimdir, int damage, int s
 void fire_rocket(edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage);
 void fire_rail(edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick);
 void fire_bfg(edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius);
+#ifdef XATRIX
+// RAFAEL
+void fire_ionripper (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int effect);
+void fire_heat (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage);
+void fire_blueblaster (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int effect);
+void fire_plasma (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage);
+void fire_trap (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean held);
+#endif //XATRIX
 
 //
 // p_client.c
@@ -982,10 +1040,21 @@ typedef enum {
     GRENADE_THROWN,
 } grenade_state_t;
 
+#ifdef XATRIX
+typedef enum {
+    TRAP_NONE,
+    TRAP_BLEW_UP,
+    TRAP_THROWN,
+} trap_state_t;
+#endif //XATRIX
+
 typedef enum {
     CHASE_NONE,
     CHASE_LEADER,
     CHASE_QUAD,
+#ifdef XATRIX
+    CHASE_QUADFIRE,
+#endif //XATRIX
     CHASE_INVU
 } chase_mode_t;
 
@@ -1164,6 +1233,13 @@ struct gclient_s {
 
     grenade_state_t grenade_state;
     int             grenade_framenum;
+#ifdef XATRIX
+    // RAFAEL
+    float		    quadfire_framenum;
+    trap_state_t	trap_state;
+    int 		    trap_framenum;
+#endif //XATRIX
+
     int         silencer_shots;
     int         weapon_sound;
 
@@ -1184,6 +1260,11 @@ struct gclient_s {
     int         max_grenades;
     int         max_cells;
     int         max_slugs;
+#ifdef XATRIX
+    // RAFAEL
+    int			max_magslug;
+    int			max_trap;
+#endif //XATRIX
 
     gitem_t     *weapon;
     gitem_t     *lastweapon;
@@ -1332,6 +1413,11 @@ struct edict_s {
 
     // common data blocks
     moveinfo_t      moveinfo;
+
+#ifdef XATRIX
+    // RAFAEL
+    int			orders;
+#endif //XATRIX
 
     // hack for proper s.old_origin updates
     vec3_t      old_origin;

@@ -22,6 +22,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 qboolean    Pickup_Weapon(edict_t *ent, edict_t *other);
 void        Use_Weapon(edict_t *ent, gitem_t *inv);
+#ifdef XATRIX
+void        Use_Weapon2 (edict_t *ent, gitem_t *item);
+#endif //XATRIX
 void        Drop_Weapon(edict_t *ent, gitem_t *inv);
 
 void Weapon_Blaster(edict_t *ent);
@@ -36,6 +39,13 @@ void Weapon_GrenadeLauncher(edict_t *ent);
 void Weapon_Railgun(edict_t *ent);
 void Weapon_BFG(edict_t *ent);
 
+#ifdef XATRIX
+// RAFAEL
+void Weapon_Ionripper (edict_t *ent);
+void Weapon_Phalanx (edict_t *ent);
+void Weapon_Trap (edict_t *ent);
+#endif //XATRIX
+
 static const gitem_armor_t jacketarmor_info = { 25,  50, .30, .00, ARMOR_JACKET};
 static const gitem_armor_t combatarmor_info = { 50, 100, .60, .30, ARMOR_COMBAT};
 static const gitem_armor_t bodyarmor_info   = {100, 200, .80, .60, ARMOR_BODY};
@@ -45,6 +55,11 @@ static const gitem_armor_t bodyarmor_info   = {100, 200, .80, .60, ARMOR_BODY};
 
 void Use_Quad(edict_t *ent, gitem_t *item);
 static int  quad_drop_timeout_hack;
+
+#ifdef XATRIX
+void Use_QuadFire (edict_t *ent, gitem_t *item);
+static int	quad_fire_drop_timeout_hack;
+#endif //XATRIX
 
 static qboolean ItemBanned(edict_t *ent);
 
@@ -168,6 +183,15 @@ qboolean Pickup_Powerup(edict_t *ent, edict_t *other)
             quad_drop_timeout_hack = ent->nextthink - level.framenum;
         ent->item->use(other, ent->item);
     }
+#ifdef XATRIX
+    // RAFAEL
+    else if (DF(INSTANT_ITEMS) || ((ent->item->use == Use_QuadFire) && (ent->spawnflags & DROPPED_PLAYER_ITEM)))
+    {
+        if ((ent->item->use == Use_QuadFire) && (ent->spawnflags & DROPPED_PLAYER_ITEM))
+            quad_fire_drop_timeout_hack = ent->nextthink - level.framenum;
+        ent->item->use (other, ent->item);
+    }
+#endif //XATRIX
 
     return qtrue;
 }
@@ -217,6 +241,12 @@ qboolean Pickup_Bandolier(edict_t *ent, edict_t *other)
     if (client->max_slugs < 75)
         client->max_slugs = 75;
 
+#ifdef XATRIX
+    // RAFAEL
+	if (client->max_magslug < 75)
+		client->max_magslug = 75;
+#endif //XATRIX
+
     item = INDEX_ITEM(ITEM_BULLETS);
     client->inventory[ITEM_BULLETS] += item->quantity;
     if (client->inventory[ITEM_BULLETS] > client->max_bullets)
@@ -250,6 +280,11 @@ qboolean Pickup_Pack(edict_t *ent, edict_t *other)
         client->max_cells = 300;
     if (client->max_slugs < 100)
         client->max_slugs = 100;
+#ifdef XATRIX
+    // RAFAEL
+	if (client->max_magslug < 100)
+		client->max_magslug = 100;
+#endif //XATRIX
 
     item = INDEX_ITEM(ITEM_BULLETS);
     client->inventory[ITEM_BULLETS] += item->quantity;
@@ -280,6 +315,14 @@ qboolean Pickup_Pack(edict_t *ent, edict_t *other)
     client->inventory[ITEM_SLUGS] += item->quantity;
     if (client->inventory[ITEM_SLUGS] > client->max_slugs)
         client->inventory[ITEM_SLUGS] = client->max_slugs;
+
+#ifdef XATRIX
+    // RAFAEL
+	item = INDEX_ITEM(ITEM_MAGSLUG);
+	client->inventory[ITEM_MAGSLUG] += item->quantity;
+	if (client->inventory[ITEM_MAGSLUG] > client->max_magslug)
+        client->inventory[ITEM_MAGSLUG] = client->max_magslug;
+#endif //XATRIX
 
     if (!(ent->spawnflags & DROPPED_ITEM))
         SetRespawn(ent, ent->item->quantity);
@@ -312,6 +355,38 @@ void Use_Quad(edict_t *ent, gitem_t *item)
 
     gi.sound(ent, CHAN_ITEM, gi.soundindex("items/damage.wav"), 1, ATTN_NORM, 0);
 }
+
+//======================================================================
+
+#ifdef XATRIX
+// RAFAEL
+void Use_QuadFire (edict_t *ent, gitem_t *item)
+{
+	int		timeout;
+
+	ent->client->inventory[ITEM_INDEX(item)]--;
+	ValidateSelectedItem (ent);
+
+	if (quad_fire_drop_timeout_hack)
+	{
+		timeout = quad_fire_drop_timeout_hack;
+		quad_fire_drop_timeout_hack = 0;
+	}
+	else
+	{
+		timeout = 30 * HZ;
+	}
+
+	if (ent->client->quadfire_framenum > level.framenum)
+		ent->client->quadfire_framenum += timeout;
+	else
+		ent->client->quadfire_framenum = level.framenum + timeout;
+
+    UpdateChaseTargets(CHASE_QUADFIRE, ent);
+
+	gi.sound(ent, CHAN_ITEM, gi.soundindex("items/quadfire1.wav"), 1, ATTN_NORM, 0);
+}
+#endif //XATRIX
 
 //======================================================================
 
@@ -401,6 +476,14 @@ qboolean Add_Ammo(edict_t *ent, gitem_t *item, int count)
         max = ent->client->max_cells;
     else if (item->tag == AMMO_SLUGS)
         max = ent->client->max_slugs;
+#ifdef XATRIX
+        // RAFAEL
+	else if (item->tag == AMMO_MAGSLUG)
+		max = ent->client->max_magslug;
+	// RAFAEL
+	else if (item->tag == AMMO_TRAP)
+		max = ent->client->max_trap;
+#endif //XATRIX
     else
         return qfalse;
 
@@ -881,10 +964,22 @@ void droptofloor(edict_t *ent)
     VectorAdd(ent->s.origin, v, dest);
 
     tr = gi.trace(ent->s.origin, ent->mins, ent->maxs, dest, ent, MASK_SOLID);
-    if (tr.startsolid) {
-        gi.dprintf("droptofloor: %s startsolid at %s\n", ent->classname, vtos(ent->s.origin));
-        G_FreeEdict(ent);
-        return;
+    if (tr.startsolid)
+    {
+#ifdef XATRIX
+        // RAFAEL
+		if (strcmp (ent->classname, "foodcube") == 0)
+		{
+			VectorCopy (ent->s.origin, tr.endpos);
+			ent->velocity[2] = 0;
+		}
+		else
+#endif //XATRIX
+        {
+            gi.dprintf("droptofloor: %s startsolid at %s\n", ent->classname, vtos(ent->s.origin));
+            G_FreeEdict(ent);
+            return;
+        }
     }
 
     VectorCopy(tr.endpos, ent->s.origin);
@@ -1436,7 +1531,11 @@ const gitem_t   g_itemlist[ITEM_TOTAL] = {
     {
         "weapon_hyperblaster",
         Pickup_Weapon,
+#ifdef XATRIX
+        Use_Weapon2,
+#else //XATRIX
         Use_Weapon,
+#endif //XATRIX
         Drop_Weapon,
         Weapon_HyperBlaster,
         "misc/w_pkup.wav",
@@ -1459,7 +1558,11 @@ const gitem_t   g_itemlist[ITEM_TOTAL] = {
     {
         "weapon_railgun",
         Pickup_Weapon,
+#ifdef XATRIX
+        Use_Weapon2,
+#else //XATRIX
         Use_Weapon,
+#endif //XATRIX
         Drop_Weapon,
         Weapon_Railgun,
         "misc/w_pkup.wav",
@@ -1852,6 +1955,128 @@ const gitem_t   g_itemlist[ITEM_TOTAL] = {
         0,
         /* precache */ "items/s_health.wav items/n_health.wav items/l_health.wav items/m_health.wav"
     }
+
+#ifdef XATRIX
+// RAFAEL 14-APR-98
+
+/*QUAKED weapon_boomer (.3 .3 1) (-16 -16 -16) (16 16 16)
+*/
+
+	,{
+		"weapon_boomer",
+		Pickup_Weapon,
+		Use_Weapon,
+		Drop_Weapon,
+		Weapon_Ionripper,
+		"misc/w_pkup.wav",
+		"models/weapons/g_boom/tris.md2", EF_ROTATE,
+		"models/weapons/v_boomer/tris.md2",
+/* icon */	"w_ripper",
+/* pickup */ "Ionripper",
+		0,
+		2,
+		"Cells",
+		IT_WEAPON,
+		WEAP_BOOMER,
+		NULL,
+		0,
+/* precache */ "weapons/rg_hum.wav weapons/rippfire.wav"
+	},
+
+/*QUAKED weapon_phalanx (.3 .3 1) (-16 -16 -16) (16 16 16)
+*/
+	{
+		"weapon_phalanx",
+		Pickup_Weapon,
+		Use_Weapon,
+		Drop_Weapon,
+		Weapon_Phalanx,
+		"misc/w_pkup.wav",
+		"models/weapons/g_shotx/tris.md2", EF_ROTATE,
+		"models/weapons/v_shotx/tris.md2",
+/* icon */	"w_phallanx",
+/* pickup */ "Phalanx",
+		0,
+		1,
+		"Mag Slug",
+		IT_WEAPON,
+		WEAP_PHALANX,
+		NULL,
+		0,
+/* precache */ "weapons/plasshot.wav"
+	},
+
+/*QUAKED ammo_trap (.3 .3 1) (-16 -16 -16) (16 16 16)
+*/
+	{
+		"ammo_trap",
+		Pickup_Ammo,
+		Use_Weapon,
+		Drop_Ammo,
+		Weapon_Trap,
+		"misc/am_pkup.wav",
+		"models/weapons/g_trap/tris.md2", EF_ROTATE,
+		"models/weapons/v_trap/tris.md2",
+/* icon */		"a_trap",
+/* pickup */	"Trap",
+/* width */		3,
+		1,
+		"trap",
+		IT_AMMO|IT_WEAPON,
+		0,
+		NULL,
+		AMMO_TRAP,
+/* precache */ "weapons/trapcock.wav weapons/traploop.wav weapons/trapsuck.wav weapons/trapdown.wav"
+// "weapons/hgrent1a.wav weapons/hgrena1b.wav weapons/hgrenc1b.wav weapons/hgrenb1a.wav weapons/hgrenb2a.wav "
+	},
+
+/*QUAKED ammo_magslug (.3 .3 1) (-16 -16 -16) (16 16 16)
+*/
+	{
+		"ammo_magslug",
+		Pickup_Ammo,
+		NULL,
+		Drop_Ammo,
+		NULL,
+		"misc/am_pkup.wav",
+		"models/objects/ammo/tris.md2", 0,
+		NULL,
+/* icon */		"a_mslugs",
+/* pickup */	"Mag Slug",
+/* width */		3,
+		10,
+		NULL,
+		IT_AMMO,
+		0,
+		NULL,
+		AMMO_MAGSLUG,
+/* precache */ ""
+	},
+
+/*QUAKED item_quadfire (.3 .3 1) (-16 -16 -16) (16 16 16)
+*/
+	{
+		"item_quadfire",
+		Pickup_Powerup,
+		Use_QuadFire,
+		Drop_General,
+		NULL,
+		"items/pkup.wav",
+		"models/items/quadfire/tris.md2", EF_ROTATE,
+		NULL,
+/* icon */		"p_quadfire",
+
+/* pickup */	"DualFire Damage",
+/* width */		2,
+		60,
+		NULL,
+		IT_POWERUP,
+		0,
+		NULL,
+		0,
+/* precache */ "items/quadfire1.wav items/quadfire2.wav items/quadfire3.wav"
+	}
+#endif //XATRIX
 };
 
 
@@ -1916,6 +2141,25 @@ void SP_item_health_mega(edict_t *self)
     gi.soundindex("items/m_health.wav");
     self->style = HEALTH_IGNORE_MAX | HEALTH_TIMED;
 }
+
+#ifdef XATRIX
+// RAFAEL
+void SP_item_foodcube (edict_t *self)
+{
+	if (DF(NO_HEALTH))
+	{
+		G_FreeEdict (self);
+		return;
+	}
+
+	self->model = "models/objects/trapfx/tris.md2";
+	SpawnItem (self, INDEX_ITEM(ITEM_HEALTH));
+	self->spawnflags |= DROPPED_ITEM;
+	self->style = HEALTH_IGNORE_MAX;
+	gi.soundindex ("items/s_health.wav");
+	self->classname = "foodcube";
+}
+#endif //XATRIX
 
 /*
 ===============
