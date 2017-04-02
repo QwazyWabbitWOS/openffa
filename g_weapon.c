@@ -832,8 +832,9 @@ void ionripper_touch (edict_t *self, edict_t *other, cplane_t *plane, csurface_t
 
     if (other->takedamage)
     {
+        G_BeginDamage();
         T_Damage (other, self, self->owner, self->velocity, self->s.origin, plane->normal, self->dmg, 1, DAMAGE_ENERGY, MOD_RIPPER);
-
+        G_EndDamage();
     }
     else
     {
@@ -854,7 +855,7 @@ void fire_ionripper (edict_t *self, vec3_t start, vec3_t dir, int damage, int sp
 
     ion = G_Spawn ();
     VectorCopy (start, ion->s.origin);
-    VectorCopy (start, ion->s.old_origin);
+    VectorCopy (start, ion->old_origin);
     vectoangles (dir, ion->s.angles);
     VectorScale (dir, speed, ion->velocity);
 
@@ -871,7 +872,7 @@ void fire_ionripper (edict_t *self, vec3_t start, vec3_t dir, int damage, int sp
     ion->s.sound = gi.soundindex ("misc/lasfly.wav");
     ion->owner = self;
     ion->touch = ionripper_touch;
-    ion->nextthink = level.time + 3;
+    ion->nextthink = level.framenum + 3 * HZ;
     ion->think = ionripper_sparks;
     ion->dmg = damage;
     ion->dmg_radius = 100;
@@ -1029,12 +1030,14 @@ void plasma_touch (edict_t *ent, edict_t *other, cplane_t *plane, csurface_t *su
     // calculate position for the explosion entity
     VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
 
+    G_BeginDamage();
     if (other->takedamage)
     {
         T_Damage (other, ent, ent->owner, ent->velocity, ent->s.origin, plane->normal, ent->dmg, 0, 0, MOD_PHALANX);
     }
 
     T_RadiusDamage(ent, ent->owner, ent->radius_dmg, other, ent->dmg_radius, MOD_PHALANX);
+    G_EndDamage();
 
     gi.WriteByte (svc_temp_entity);
     gi.WriteByte (TE_PLASMA_EXPLOSION);
@@ -1052,6 +1055,7 @@ void fire_plasma (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 
     plasma = G_Spawn();
     VectorCopy (start, plasma->s.origin);
+    VectorCopy (start, plasma->old_origin);
     VectorCopy (dir, plasma->movedir);
     vectoangles (dir, plasma->s.angles);
     VectorScale (dir, speed, plasma->velocity);
@@ -1064,7 +1068,7 @@ void fire_plasma (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 
     plasma->owner = self;
     plasma->touch = plasma_touch;
-    plasma->nextthink = level.time + 8000/speed;
+    plasma->nextthink = level.framenum + 8000 * HZ / speed;
     plasma->think = G_FreeEdict;
     plasma->dmg = damage;
     plasma->radius_dmg = radius_damage;
@@ -1102,7 +1106,7 @@ static void Trap_Think (edict_t *ent)
         return;
     }
 
-    ent->nextthink = level.time + 0.1;
+    ent->nextthink = level.framenum + 0.1 * HZ;
 
     if (!ent->groundentity)
         return;
@@ -1165,7 +1169,7 @@ static void Trap_Think (edict_t *ent)
                 if (best->watertype & MASK_WATER)
                     best->waterlevel = 1;
 
-                best->nextthink = level.time + 0.1;
+                best->nextthink = level.framenum + 0.1 * HZ;
                 best->think = G_FreeEdict;
                 gi.linkentity (best);
             }
@@ -1178,7 +1182,7 @@ static void Trap_Think (edict_t *ent)
         ent->s.frame ++;
         if (ent->s.frame == 8)
         {
-            ent->nextthink = level.time + 1.0;
+            ent->nextthink = level.framenum + 1.0 * HZ;
             ent->think = G_FreeEdict;
 
             best = G_Spawn ();
@@ -1262,10 +1266,12 @@ static void Trap_Think (edict_t *ent)
         {
             if (best->mass < 400)
             {
+                G_BeginDamage();
                 T_Damage (best, ent, ent->owner, vec3_origin, best->s.origin, vec3_origin, 100000, 1, 0, MOD_TRAP);
+                G_EndDamage();
                 ent->enemy = best;
                 ent->wait = 64;
-                VectorCopy (ent->s.origin, ent->s.old_origin);
+                VectorCopy (ent->s.origin, ent->old_origin);
                 ent->timestamp = level.time + 30;
                 //if (deathmatch->value)
                     ent->mass = best->mass/4;
@@ -1301,6 +1307,7 @@ void fire_trap (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int spee
 
     trap = G_Spawn();
     VectorCopy (start, trap->s.origin);
+    VectorCopy (start, trap->old_origin);
     VectorScale (aimdir, speed, trap->velocity);
     VectorMA (trap->velocity, 200 + crandom() * 10.0, up, trap->velocity);
     VectorMA (trap->velocity, crandom() * 10.0, right, trap->velocity);
@@ -1314,7 +1321,7 @@ void fire_trap (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int spee
     VectorSet (trap->maxs, 4, 4, 8);
     trap->s.modelindex = gi.modelindex ("models/weapons/z_trap/tris.md2");
     trap->owner = self;
-    trap->nextthink = level.time + 1.0;
+    trap->nextthink = level.framenum + 1.0 * HZ;
     trap->think = Trap_Think;
     trap->dmg = damage;
     trap->dmg_radius = damage_radius;

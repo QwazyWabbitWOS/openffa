@@ -1450,8 +1450,12 @@ void weapon_ionripper_fire (edict_t *ent)
     gi.WriteByte (MZ_IONRIPPER | is_silenced);
     gi.multicast (ent->s.origin, MULTICAST_PVS);
 
-    ent->client->ps.gunframe++;
+    ent->client->weaponframe++;
     //PlayerNoise (ent, start, PNOISE_WEAPON);
+
+    if (ent->client->silencer_shots) {
+        ent->client->silencer_shots--;
+    }
 
     if (!DF(INFINITE_AMMO))
         ent->client->inventory[ent->client->ammo_index] -= ent->client->weapon->quantity;
@@ -1506,7 +1510,7 @@ void weapon_phalanx_fire (edict_t *ent)
     VectorSet(offset, 0, 8,  ent->viewheight-8);
     P_ProjectSource (ent->client, ent->s.origin, offset, forward, right, start);
 
-    if (ent->client->ps.gunframe == 8)
+    if (ent->client->weaponframe == 8)
     {
         v[PITCH] = ent->client->v_angle[PITCH];
         v[YAW]   = ent->client->v_angle[YAW] - 1.5;
@@ -1536,9 +1540,12 @@ void weapon_phalanx_fire (edict_t *ent)
         gi.multicast (ent->s.origin, MULTICAST_PVS);
 
         //PlayerNoise(ent, start, PNOISE_WEAPON);
+        if (ent->client->silencer_shots) {
+            ent->client->silencer_shots--;
+        }
     }
 
-    ent->client->ps.gunframe++;
+    ent->client->weaponframe++;
 
 }
 
@@ -1654,7 +1661,7 @@ void Weapon_Trap (edict_t *ent)
         {
             if (!ent->client->trap_framenum)
             {
-                ent->client->trap_framenum = level.time + TRAP_TIMER + 2;
+                ent->client->trap_framenum = level.framenum + TRAP_TIMER + 2;
                 // RAFAEL 16-APR-98
                 ent->client->weapon_sound = gi.soundindex("weapons/traploop.wav");
                 // END 16-APR-98
