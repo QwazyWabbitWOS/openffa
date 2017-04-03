@@ -190,13 +190,6 @@ typedef enum {
     ITEM_CELLS,
     ITEM_ROCKETS,
     ITEM_SLUGS,
-#ifdef XATRIX
-    ITEM_MAGSLUG,
-    ITEM_QUADFIRE,
-    ITEM_PHALANX,
-    ITEM_IONRIPPER,
-    ITEM_TRAP,
-#endif //XATRIX
     ITEM_QUAD,
     ITEM_INVULNERABILITY,
     ITEM_SILENCER,
@@ -207,6 +200,13 @@ typedef enum {
     ITEM_BANDOLIER,
     ITEM_PACK,
     ITEM_HEALTH,
+#ifdef XATRIX
+    ITEM_IONRIPPER,
+    ITEM_PHALANX,
+    ITEM_TRAP,
+    ITEM_MAGSLUG,
+    ITEM_QUADFIRE,
+#endif //XATRIX
 
     ITEM_TOTAL
 } item_t;
@@ -885,8 +885,8 @@ void fire_bfg(edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, fl
 #ifdef XATRIX
 // RAFAEL
 void fire_ionripper (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int effect);
-void fire_heat (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage);
-void fire_blueblaster (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int effect);
+//void fire_heat (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage);
+//void fire_blueblaster (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, int effect);
 void fire_plasma (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, float damage_radius, int radius_damage);
 void fire_trap (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int speed, float timer, float damage_radius, qboolean held);
 #endif //XATRIX

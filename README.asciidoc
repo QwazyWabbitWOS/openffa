@@ -2,16 +2,14 @@ OpenFFA Xatrix fork
 ===================
 
 This is my first attempt to extend OpenFFA Quake 2 Mod to support the xatrix Mission Pack 1 "The Reconing".
-I merged the 3.20 xatrix code in and it compiles. But this is still a big todo as it comes out totally bugged.
+I merged the 3.20 xatrix code in and it compiles. But this is still a big todo as it is untested and there are known bugs.
 
 Problems:
 ---------
-- the xatrix weapons are non-functional, one a weapon is fired it stays in a loop forever
-- health packs seem to be bugged aswell, the game somehow mixes them with the quadfire item and they don't have the expected effect
+- the server crashes when a player is caught by his own trap (possibly related to generation of the "food cube")
 
 ToDo:
 -----
-- (fix the above bugs)
 - properly handle quadfire item in quad-chasecam mode
 - implement weapon statistics for the new xatrix weapons
 - merge the 3.24 xatrix changes by knightmare in
