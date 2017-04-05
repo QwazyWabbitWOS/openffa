@@ -658,15 +658,17 @@ extern  spawn_temp_t    st;
 #define MOD_TRIGGER_HURT    31
 #define MOD_HIT             32
 #define MOD_TARGET_BLASTER  33
-#define MOD_TOTAL           34
 
 #ifdef XATRIX
-#define MOD_RIPPER				35
-#define MOD_PHALANX				36
-#define MOD_BRAINTENTACLE		37
-#define MOD_BLASTOFF			38
-#define MOD_GEKK				39
-#define MOD_TRAP				40
+#define MOD_RIPPER				34
+#define MOD_PHALANX				35
+#define MOD_BRAINTENTACLE		36
+#define MOD_BLASTOFF			37
+#define MOD_GEKK				38
+#define MOD_TRAP				39
+#define MOD_TOTAL           40
+#else
+#define MOD_TOTAL           34
 #endif //XATRIX
 
 #define MOD_FRIENDLY_FIRE   0x8000000
@@ -1085,6 +1087,14 @@ typedef enum {
     FRAG_CRUSH,
     FRAG_FALLING,
     FRAG_SUICIDE,
+#ifdef XATRIX
+    FRAG_RIPPER,
+    FRAG_PHALANX,
+    FRAG_BRAINTENTACLE,
+    FRAG_BLASTOFF,
+    FRAG_GEKK,
+    FRAG_TRAP,
+#endif //XATRIX
     FRAG_TOTAL
 } frag_t;
 

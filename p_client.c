@@ -159,7 +159,24 @@ static const frag_t mod_to_frag[MOD_TOTAL] = {
     FRAG_TELEPORT,
     FRAG_FALLING,
     FRAG_SUICIDE,
-    FRAG_GRENADES
+    FRAG_GRENADES,
+    FRAG_UNKNOWN,
+    FRAG_UNKNOWN,
+    FRAG_UNKNOWN,
+    FRAG_UNKNOWN,
+    FRAG_UNKNOWN,
+    FRAG_UNKNOWN,
+    FRAG_UNKNOWN,
+    FRAG_UNKNOWN,
+    FRAG_UNKNOWN,
+#ifdef XATRIX
+    FRAG_RIPPER,
+    FRAG_PHALANX,
+    FRAG_BRAINTENTACLE,
+    FRAG_BLASTOFF,
+    FRAG_GEKK,
+    FRAG_TRAP
+#endif //XATRIX
 };
 
 static void AccountItemKills(edict_t *ent)
