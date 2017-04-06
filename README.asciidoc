@@ -4,10 +4,14 @@ OpenFFA Xatrix fork
 This is my first attempt to extend OpenFFA Quake 2 Mod to support the xatrix Mission Pack 1 "The Reconing".
 I merged the 3.20 xatrix code in and it compiles. But this is still a big todo as it is totally untested.
 
+Changes:
+--------
+- contains all MP relevant 3.20 xatrix code (+some SP leftovers)
+- contains some additional 3.24 (knightmare) fixes: RealBoundingBox and powerscreen hud icon fix
+
 ToDo:
 -----
 - testing
-- merge the 3.24 xatrix changes by knightmare in
 - import features from the quake2plus-tsmod xatrix mod
 - make xatrix entities switchable by a server console variable ("xatrix")
 - properly handle quadfire item in quad-chasecam mode
