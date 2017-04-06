@@ -123,41 +123,6 @@ static void gib_touch(edict_t *self, edict_t *other, cplane_t *plane, csurface_t
     }
 }
 
-// RAFAEL 24-APR-98
-// removed acid damage
-#if 0 && defined(XATRIX)
-// RAFAEL
-void gib_touchacid (edict_t *self, edict_t *other, cplane_t *plane, csurface_t *surf)
-{
-	vec3_t normal_angles, right;
-
-	if (other->takedamage)
-	{
-		T_Damage (other, self, self, vec3_origin, other->s.origin, vec3_origin, self->dmg, 1, 0, MOD_CRUSH);
-		G_FreeEdict (self);
-	}
-
-	if (!self->groundentity)
-		return;
-
-	if (plane)
-	{
-		gi.sound (self, CHAN_VOICE, gi.soundindex ("misc/fhit3.wav"), 1, ATTN_NORM, 0);
-
-		vectoangles (plane->normal, normal_angles);
-		AngleVectors (normal_angles, NULL, right, NULL);
-		vectoangles (right, self->s.angles);
-
-		if (self->s.modelindex == sm_meat_index)
-		{
-			self->s.frame++;
-			self->think = gib_think;
-			self->nextthink = level.time + FRAMETIME;
-		}
-	}
-}
-#endif //0 && defined(XATRIX)
-
 static void gib_die(edict_t *self, edict_t *inflictor, edict_t *attacker, int damage, vec3_t point)
 {
     G_FreeEdict(self);
@@ -286,9 +251,6 @@ void ThrowGibACID (edict_t *self, char *gibname, int damage, int type)
     if (type == GIB_ORGANIC)
     {
         gib->movetype = MOVETYPE_TOSS;
-        // RAFAEL 24-APR-98
-        // removed acid damage
-        //gib->touch = gib_touchacid;
         vscale = 3.0;
     }
     else
@@ -340,9 +302,6 @@ void ThrowHeadACID (edict_t *self, char *gibname, int damage, int type)
     if (type == GIB_ORGANIC)
     {
         self->movetype = MOVETYPE_TOSS;
-        // RAFAEL 24-APR-98
-        // removed acid damage
-        // self->touch = gib_touchacid;
         vscale = 0.5;
     }
     else
