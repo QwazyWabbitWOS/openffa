@@ -671,7 +671,11 @@ void G_SetStats(edict_t *ent)
     index = ArmorIndex(ent);
     if (power_armor_type && (!index || ((level.framenum / FRAMEDIV) & 8))) {
         // flash between power armor and other armor icon
-        ent->client->ps.stats[STAT_ARMOR_ICON] = level.images.powershield;
+        // Knightmare- use correct icon for power screen
+        if (power_armor_type == ITEM_POWER_SHIELD)
+            ent->client->ps.stats[STAT_ARMOR_ICON] = level.images.powershield;
+        else	// POWER_ARMOR_SCREEN
+            ent->client->ps.stats[STAT_ARMOR_ICON] = level.images.powerscreen;
         ent->client->ps.stats[STAT_ARMOR] = cells;
     } else if (index) {
         item = INDEX_ITEM(index);

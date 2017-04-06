@@ -205,9 +205,9 @@ void blaster_touch(edict_t *self, edict_t *other, cplane_t *plane, csurface_t *s
         gi.WriteByte(svc_temp_entity);
 #ifdef XATRIX
         // RAFAEL
-        //if (self->s.effects & TE_BLUEHYPERBLASTER)
-        //	gi.WriteByte (TE_BLUEHYPERBLASTER);
-        //else
+        if (self->s.effects & EF_BLUEHYPERBLASTER)	// Knightmare- this was checking bit TE_BLUEHYPERBLASTER
+            gi.WriteByte (TE_FLECHETTE);			// Knightmare- TE_BLUEHYPERBLASTER is broken (parse error) in most Q2 engines
+        else
 #endif //XATRIX
         gi.WriteByte(TE_BLASTER);
         gi.WritePosition(self->s.origin);

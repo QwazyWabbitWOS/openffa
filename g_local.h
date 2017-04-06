@@ -481,6 +481,7 @@ typedef struct {
     struct {
         int     health;
         int     powershield;
+        int     powerscreen;
         int     quad;
 #ifdef XATRIX
         int     quadfire;

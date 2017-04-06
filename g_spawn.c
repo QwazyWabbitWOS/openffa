@@ -931,6 +931,7 @@ void SP_worldspawn(edict_t *ent)
     gi.imageindex("field_3");
 
     level.images.powershield = gi.imageindex("i_powershield");
+    level.images.powershield = gi.imageindex("i_powerscreen");
     level.images.quad = gi.imageindex("p_quad");
     level.images.invulnerability = gi.imageindex("p_invulnerability");
     level.images.envirosuit = gi.imageindex("p_envirosuit");
