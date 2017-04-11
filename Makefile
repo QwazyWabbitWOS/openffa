@@ -28,7 +28,7 @@ ifdef CONFIG_WINDOWS
     LDFLAGS += -Wl,--nxcompat,--dynamicbase
 else
     CFLAGS += -fPIC -fvisibility=hidden
-    LDFLAGS += -Wl
+	LDFLAGS += -Wl,--no-undefined
 endif
 
 CFLAGS += -DOPENFFA_VERSION='"$(VER)"' -DOPENFFA_REVISION='"$(REV)"'
