@@ -27,8 +27,13 @@ ifdef CONFIG_WINDOWS
     LDFLAGS += -mconsole
     LDFLAGS += -Wl,--nxcompat,--dynamicbase
 else
+ifeq ($(shell uname), Darwin)
+	CFLAGS += -fPIC
+	LIBTOOL = otool
+else
     CFLAGS += -fPIC -fvisibility=hidden
 	LDFLAGS += -Wl,--no-undefined
+endif
 endif
 
 CFLAGS += -DOPENFFA_VERSION='"$(VER)"' -DOPENFFA_REVISION='"$(REV)"'
