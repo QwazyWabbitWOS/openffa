@@ -22,6 +22,7 @@ RM ?= rm -f
 CFLAGS ?= -O2 -fno-strict-aliasing -g -Wall -MMD $(INCLUDES)
 LDFLAGS ?= -shared
 LIBS ?=
+LIBTOOL = ldd
 
 ifdef CONFIG_WINDOWS
     LDFLAGS += -mconsole
@@ -91,6 +92,7 @@ endif
 $(TARGET): $(OBJS)
 	$(E) [LD] $@
 	$(Q)$(CC) $(LDFLAGS) -o $@ $^ $(LIBS)
+	$(LIBTOOL) -r $@
 
 clean:
 	$(E) [CLEAN]
