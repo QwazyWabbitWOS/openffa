@@ -149,9 +149,11 @@ void PMenu_Next(edict_t *ent)
     i = menu->cur;
     p = menu->entries + menu->cur;
     do {
-        i++, p++;
-        if (i == MAX_MENU_ENTRIES)
-            i = 0, p = menu->entries;
+		i++; p++;
+		if (i == MAX_MENU_ENTRIES) {
+			i = 0;
+			p = menu->entries;
+		}
         if (p->select)
             break;
     } while (i != menu->cur);
@@ -183,7 +185,7 @@ void PMenu_Prev(edict_t *ent)
             i = MAX_MENU_ENTRIES - 1;
             p = menu->entries + i;
         } else {
-            i--, p--;
+			i--; p--;
         }
         if (p->select)
             break;
